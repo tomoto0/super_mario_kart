@@ -6,9 +6,6 @@ Three.js による完全プロシージャル 3D グラフィックス、Web Aud
 
 ![OGP Preview](./client/public/images/ogp-preview.jpg)
 
-![Concept Art](./client/public/images/concept_art_mario_kart.jpg)
-> コンセプトアート（AI生成イメージ。著作権に注意してご利用ください）
-
 ---
 
 ## 目次
