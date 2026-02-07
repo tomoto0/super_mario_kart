@@ -9,12 +9,56 @@ class AudioManager {
                 this.music.pause();
                 this.music = null;
             }
+
             const audio = new Audio(filename);
             audio.loop = true;
             audio.volume = this.musicVolume;
+
+            const attachGestureHandler = () => {
+                const handler = async () => {
+                    try {
+                        // Ensure AudioContext is resumed on user gesture
+                        this.resume();
+                        const p = audio.play();
+                        if (p && typeof p.then === 'function') {
+                            await p;
+                        }
+                        this.music = audio;
+                        this.musicPlaying = true;
+                    } catch (err) {
+                        console.warn('Music play still blocked after user gesture:', err);
+                    }
+                };
+
+                window.addEventListener('pointerdown', handler, { once: true });
+                window.addEventListener('keydown', handler, { once: true });
+            };
+
             audio.addEventListener('canplay', () => {
-                audio.play();
+                try {
+                    const playPromise = audio.play();
+                    if (playPromise && typeof playPromise.then === 'function') {
+                        playPromise.catch(() => {
+                            // Autoplay was blocked by the browser; wait for user gesture
+                            console.warn('Autoplay blocked, will start music on first user gesture');
+                            attachGestureHandler();
+                        }).then(() => {
+                            // If play succeeds, mark as playing
+                            this.music = audio;
+                            this.musicPlaying = true;
+                        });
+                    } else {
+                        // play() returned no promise (older browsers) — assume it started
+                        this.music = audio;
+                        this.musicPlaying = true;
+                    }
+                } catch (e) {
+                    // Synchronous exception — likely blocked. Wait for user gesture.
+                    console.warn('Autoplay threw error, waiting for user gesture to start music', e);
+                    attachGestureHandler();
+                }
             });
+
             this.music = audio;
         }
         stopMusic() {
