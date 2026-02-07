@@ -1,8 +1,8 @@
-# 🏎️ Super Kart Racing 3D
+# 🏎️ Super Mario Kart 3D
 
-> **ブラウザだけで遊べる、本格3Dカートレーシングゲーム**
+> **ブラウザで遊べる、本格3Dカートレーシングゲーム**
 
-Three.js による完全プロシージャル 3D グラフィックス、Web Audio API によるリアルタイム音声合成、8人同時レースの AI 対戦 ── すべてを外部アセット不要で実現した、フルスタック JavaScript レーシングゲームです。
+Three.js による完全プロシージャル 3D グラフィックス、Web Audio API によるリアルタイム音声合成、8カート同時レースの AI対戦 ── すべてを外部アセット不要で実現した、フルスタック JavaScript レーシングゲームです。
 
 ![OGP Preview](./client/public/images/ogp-preview.jpg)
 
@@ -28,7 +28,7 @@ Three.js による完全プロシージャル 3D グラフィックス、Web Aud
 
 ## ゲーム概要
 
-**Super Kart Racing 3D** は、任天堂マリオカートシリーズにインスパイアされた Web ベースの 3D カートレーシングゲームです。
+**Super Mario Kart 3D** は、任天堂マリオカートシリーズにインスパイアされた Web ベースの 3D カートレーシングゲームです。
 
 ### 主な特徴
 
