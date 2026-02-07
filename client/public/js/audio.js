@@ -2,7 +2,8 @@
 
 class AudioManager {
         // Play local mp3 music by filename
-        playLocalMusic(filename) {
+        // opts: { forceAutoplay: boolean }
+        playLocalMusic(filename, opts = {}) {
             if (!this.initialized) return;
             this.stopMusic();
             if (this.music) {
@@ -35,28 +36,69 @@ class AudioManager {
             };
 
             audio.addEventListener('canplay', () => {
-                try {
-                    const playPromise = audio.play();
-                    if (playPromise && typeof playPromise.then === 'function') {
-                        playPromise.catch(() => {
-                            // Autoplay was blocked by the browser; wait for user gesture
-                            console.warn('Autoplay blocked, will start music on first user gesture');
-                            attachGestureHandler();
-                        }).then(() => {
-                            // If play succeeds, mark as playing
-                            this.music = audio;
-                            this.musicPlaying = true;
-                        });
-                    } else {
-                        // play() returned no promise (older browsers) — assume it started
+                const tryPlay = async (mutedFallback = false) => {
+                    try {
+                        if (mutedFallback) audio.muted = true;
+                        this.resume();
+                        const p = audio.play();
+                        if (p && typeof p.then === 'function') {
+                            await p;
+                        }
                         this.music = audio;
                         this.musicPlaying = true;
+                        return true;
+                    } catch (err) {
+                        return false;
                     }
-                } catch (e) {
-                    // Synchronous exception — likely blocked. Wait for user gesture.
-                    console.warn('Autoplay threw error, waiting for user gesture to start music', e);
+                };
+
+                (async () => {
+                    const played = await tryPlay(false);
+                    if (played) return;
+
+                    // If user requested forceAutoplay, try muted fallback and periodic unmute attempts
+                    if (opts.forceAutoplay) {
+                        const mutedPlayed = await tryPlay(true);
+                        if (!mutedPlayed) {
+                            console.warn('Autoplay blocked even when muted; will wait for user gesture');
+                            attachGestureHandler();
+                            return;
+                        }
+
+                        // Try to unmute periodically (best-effort). This cannot override browser policy,
+                        // but in some environments unmuting after short delay may succeed.
+                        const maxAttempts = 30; // try for ~30s
+                        let attempts = 0;
+                        const intervalId = setInterval(async () => {
+                            attempts++;
+                            try {
+                                audio.muted = false;
+                                const p = audio.play();
+                                if (p && typeof p.then === 'function') {
+                                    await p;
+                                }
+                                // If play succeeds without muted flag, clear attempts
+                                this.music = audio;
+                                this.musicPlaying = true;
+                                clearInterval(intervalId);
+                            } catch (e) {
+                                // still blocked — re-mute and continue
+                                audio.muted = true;
+                                if (attempts >= maxAttempts) {
+                                    clearInterval(intervalId);
+                                    console.warn('Unable to unmute automatically; will wait for user gesture');
+                                    attachGestureHandler();
+                                }
+                            }
+                        }, 1000);
+                        return;
+                    }
+
+                    // Fallback: wait for first user gesture
+                    console.warn('Autoplay blocked; will start music on first user gesture');
                     attachGestureHandler();
-                }
+                })();
+
             });
 
             this.music = audio;
