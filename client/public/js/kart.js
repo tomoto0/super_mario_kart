@@ -2509,10 +2509,10 @@ class Kart {
                     pushDirection.z /= len;
                     
                     if (this.isPlayer) {
-                        // プレイヤー: 通常の衝突処理
+                        // プレイヤー: 通常の衝突処理（減速を緩和）
                         this.position.x += pushDirection.x * 2;
                         this.position.z += pushDirection.z * 2;
-                        this.speed *= 0.4;
+                        this.speed *= 0.75; // 以前 0.4 -> 0.75
                         if (this.velocity) {
                             this.velocity.x = pushDirection.x * Math.abs(this.speed) * 0.2;
                             this.velocity.z = pushDirection.z * Math.abs(this.speed) * 0.2;
@@ -2527,16 +2527,16 @@ class Kart {
                             this.velocity.z = pushDirection.z * Math.abs(this.speed) * 0.1;
                         }
                     }
-                    
+
                     // 衝突音（あれば）
                     if (window.audioManager) {
                         window.audioManager.playSound('collision');
                     }
                 }
+                }
             }
         }
     }
-    
     checkBarrierCollision(track) {
         if (!track.barriers || track.barriers.length === 0) return;
         
@@ -2570,8 +2570,8 @@ class Kart {
                     this.position.x += pushDirection.x * pushDist;
                     this.position.z += pushDirection.z * pushDist;
                     
-                    // 速度を大幅に減速
-                    this.speed *= 0.3;
+                    // 速度を大幅に減速（タイヤバリア） — 減速を軽減
+                    this.speed *= 0.65; // 以前 0.3 -> 今は 0.65
                     
                     // バウンス効果
                     if (this.velocity) {
@@ -2596,7 +2596,8 @@ class Kart {
                 if (dist < fenceRadius) {
                     // 高速なら突破可能
                     if (Math.abs(this.speed) >= breakThroughSpeed) {
-                        this.speed *= 0.4;
+                        // 走り抜けた時の減速を軽減
+                        this.speed *= 0.7; // 以前 0.4 -> 今は 0.7
                         if (window.audioManager) {
                             window.audioManager.playSound('collision');
                         }
@@ -2628,7 +2629,8 @@ class Kart {
                         this.position.x += normalX * pushDist;
                         this.position.z += normalZ * pushDist;
                         
-                        this.speed *= 0.5;
+                        // フェンスに衝突 - 減速を軽減
+                        this.speed *= 0.75; // 以前 0.5 -> 今は 0.75
                         
                         if (window.audioManager) {
                             window.audioManager.playSound('collision');
