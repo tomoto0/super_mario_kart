@@ -2532,11 +2532,10 @@ class Kart {
                     if (window.audioManager) {
                         window.audioManager.playSound('collision');
                     }
-                }
-                }
-            }
-        }
-    }
+                } // end if (len > 0.01)
+            } // end if (kartBox.intersectsBox(objBox))
+        } // end for (const obj of track.collidableObjects)
+    } // end checkCollidableObjects
     checkBarrierCollision(track) {
         if (!track.barriers || track.barriers.length === 0) return;
         
